@@ -11,13 +11,7 @@
 	title
 	location
 	office
-    membersince
-    bankname
-    accname
-    accnumber
-    pwd
-    isactive
-    hasaccess
+	membersince
 	
 	beneficiaries [] = 
 		firstname
@@ -31,34 +25,7 @@ const { MongoClient, ObjectID } = require('mongodb');
 const DB_CONFIG = require('../db.config');
 
 exports.create = (req, res) => {
-    console.log('create...');
-    console.log(req.body);
 
-    const client = new MongoClient(DB_CONFIG.url);
-
-    async function run() {
-        try {
-            await client.connect();
-    
-            const db = client.db(DB_CONFIG.db);
-            console.log("Successfully connected to the database!");
-            // res.send({ msg: "Successfully connected to the database!" });
-    
-            var objMem = req.body;
-            objMem.beneficiaries = [];
-
-            // const coll = db.collection(DB_CONFIG.collections.MEMBERS);
-            const result = await db.collection(DB_CONFIG.collections.MEMBERS).insertOne(objMem);
-            console.log(result);
-            res.send(result);
-        }
-        finally {
-            await client.close();
-            console.log("Closed connection. Goodbye!");
-        }
-    }
-    run().then().catch(console.dir);
-    
 }
 
 exports.delete = (req, res) => {
@@ -96,11 +63,7 @@ exports.find = (req, res) => {
             console.log("Successfully connected to the database!");
     
             // const coll = db.collection(DB_CONFIG.collections.MEMBERS);
-            const members = await
-                db.collection(DB_CONFIG.collections.MEMBERS)
-                    .find(condition)
-                    .project(fields)
-                    .toArray();
+            const members = await db.collection(DB_CONFIG.collections.MEMBERS).find(condition, fields).toArray();
             console.log(members);
             res.send(members);
         }
@@ -149,37 +112,5 @@ exports.getContributions = (req, res) => {
 }
 
 exports.update = (req, res) => {
-    const id = req.query.id;
-    console.log(`updating id=${id}`);
-    console.log(req.body);
 
-    const client = new MongoClient(DB_CONFIG.url);
-
-    if (Object.keys(req.body).length <= 0) {
-        res.send({ ok: true, msg: 'Success' });
-        return;
-    }
-
-    async function run() {
-        try {
-            await client.connect();
-            
-            const db = client.db(DB_CONFIG.db);
-            console.log("Successfully connected to the database!");
-            
-            const result = await db.collection(DB_CONFIG.collections.MEMBERS)
-                .updateOne({ "_id": ObjectID(id) }, {$set:req.body});
-            console.log(result);
-            res.send({ ok: true, msg: 'Success' });
-        }
-        finally {
-            await client.close();
-            console.log("Closed connection. Goodbye!");
-        }
-    }
-
-    run().then().catch(err => {
-        res.send({ ok: false, msg: err.resultText.toString() });
-    });
 }
-
